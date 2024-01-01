@@ -20,20 +20,25 @@
           </el-form-item>
           <el-form-item>
             <el-button type="primary" style="width:350px" @click="login"> 登录</el-button>
-          </el-form-item></el-form>
+          </el-form-item>
+          <el-button @click="testAjax">测试按钮1</el-button>
+          <el-button @click="testRequest">测试按钮2</el-button>
+        </el-form>
       </el-card>
     </div>
   </div>
 </template>
 <script>
+import axios from 'axios'
+import request from '@/utils/request'
 export default {
   name: 'Login',
   data() {
     return {
       loginForm: {
-        mobile: '',
-        password: '',
-        isAgree: false
+        mobile: process.env.NODE_ENV === 'development' ? '13800000002' : '',
+        password: process.env.NODE_ENV === 'development' ? 'hm#qd@23!' : ' ',
+        isAgree: process.env.NODE_ENV === 'development'
       },
       // 规则
       loginRules: {
@@ -79,9 +84,34 @@ export default {
   },
   methods: {
     login() {
-      this.$refs.form.validate((isOk) => {
+      this.$refs.form.validate(async(isOk) => {
         if (isOk) {
           alert('校验通过')
+          // 调用登录方法 , 写await方法，注意async的位置，代表要等他返回成功
+          await this.$store.dispatch('user/login', this.loginForm)
+          this.$router.push('/')
+        }
+      })
+    },
+    testAjax() {
+      axios({
+        //  url: 'https://heimahr.itheima.net/api/sys/login',
+        url: '/api/sys/login', // 为生效代理这里需要去掉前缀//原理 'http://localhost:9528/api/sys/login'=> url: 'https://heimahr.itheima.net/api/sys/login',
+        method: 'post',
+        data: {
+          mobile: '13912345678',
+          password: '123456'
+        }
+
+      })
+    },
+    testRequest() {
+      request({
+        url: '/sys/login',
+        method: 'post',
+        data: {
+          mobile: '13912312312',
+          password: '123456'
         }
       })
     }
