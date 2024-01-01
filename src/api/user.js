@@ -7,3 +7,10 @@ export function login(data) {
     data
   })
 }
+
+// 调用接口
+export function getUserInfo() {
+  return request({
+    url: '/sys/profile'
+  })
+}
