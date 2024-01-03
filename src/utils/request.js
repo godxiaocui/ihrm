@@ -1,6 +1,7 @@
 import axios from 'axios'
 import store from '@/store'
 import { Message } from 'element-ui'
+import router from '@/router'
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
   timeout: 10000
@@ -29,8 +30,17 @@ service.interceptors.response.use((res) => {
     Message({ type: 'error', message })
     return Promise.reject(new Error(message))
   }
-}, (error) => {
+}, async(error) => {
   // error.message
+  // token超市
+  if (error.response.status === 401) {
+    Message({ type: 'warn', message: 'token 超时' })
+    // 删除token操作,一定要切记action是一个promise
+    await store.dispatch('user/logout')// 退出登录
+    // 跳转登录页面
+    router.push('/login')
+    return Promise.reject(error)
+  }
   // 这里这么写也是错的this.$message(参考this.$store.getters) 不在组件内所以可以用Message引入的方式
   Message({ type: 'error', message: error.message })
   return Promise.reject(error)

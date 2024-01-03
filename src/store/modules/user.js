@@ -36,6 +36,13 @@ const actions = {
     // 获取资料接口
     const res = await getUserInfo()
     context.commit('setUserInfo', res)
+  },
+  // 删除token重新登录
+  logout(context) {
+    // 删除token
+    context.commit('removeToken')
+    // 删除用户信息
+    context.commit('setUserInfo', {})
   }
 }
 
