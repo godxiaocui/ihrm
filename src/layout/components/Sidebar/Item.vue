@@ -1,7 +1,7 @@
 <script>
 export default {
   name: 'MenuItem',
-  functional: true,
+  functional: true, // 函数组件
   props: {
     icon: {
       type: String,
@@ -12,6 +12,7 @@ export default {
       default: ''
     }
   },
+  // 渲染的函数
   render(h, context) {
     const { icon, title } = context.props
     const vnodes = []
@@ -27,6 +28,7 @@ export default {
     if (title) {
       vnodes.push(<span slot='title'>{(title)}</span>)
     }
+    // 渲染的节点
     return vnodes
   }
 }

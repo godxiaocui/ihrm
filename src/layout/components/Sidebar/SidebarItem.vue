@@ -1,8 +1,10 @@
 <template>
+  <!-- 判断item什么时候展示hidden =true 在路由信息里有配置这个属性-->
   <div v-if="!item.hidden">
     <template v-if="hasOneShowingChild(item.children,item) && (!onlyOneChild.children||onlyOneChild.noShowingChildren)&&!item.alwaysShow">
       <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
         <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{'submenu-title-noDropdown':!isNest}">
+          <!--来源属性，meta 元信息保存的数据onlyOneChild这不用管-->
           <item :icon="onlyOneChild.meta.icon||(item.meta&&item.meta.icon)" :title="onlyOneChild.meta.title" />
         </el-menu-item>
       </app-link>
