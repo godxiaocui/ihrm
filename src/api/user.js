@@ -1,4 +1,4 @@
-import request from '@/utils/request'
+import request from '@/views/utils/request'
 
 export function login(data) {
   return request({
