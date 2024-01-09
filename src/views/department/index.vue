@@ -16,7 +16,8 @@
               </span>
               <!-- $event 实参 表示类型 -->
               <!-- command下拉框方法触发的点击事件-->
-              <el-dropdown @command="operarteDept">
+              <!-- $event 实参，理解成不用传数据，就是可以表示的类型，这里是type  -->
+              <el-dropdown @command="operarteDept($event,data.id)">
                 <!-- 显示区域内容 -->
                 <span class="el-dropdown-link">
                   操作<i class="el-icon-arrow-down el-icon--right" />
@@ -34,7 +35,9 @@
     </div>
     <!--引入编辑弹曾 -->
     <!-- 正常来讲你接受不了子传父的数据，要写一个专门的方法的接受， 但是.sync 等于实现了一个update:showDialog的值=》 属性-->
-    <add-dept :show-dialog.sync="showDialog" />
+    <!-- 这里监听了子组件的传值，如果子组件更新成功，重新拉取数据-->
+    <!-- ref可以获取实例对象，也可以获取自定义组件的实例对象-->
+    <add-dept ref="addDept" :show-dialog.sync="showDialog" :current-node-id="currentNodeId" @updateDept="getDepartment" />
   </div>
 </template>
 <script>
@@ -48,6 +51,7 @@ export default {
   },
   data() {
     return {
+      currentNodeId: null, // 父组件id
       showDialog: false, // 控制弹曾是否显示
       //  树的 数据属性
       depts: [],
@@ -64,14 +68,28 @@ export default {
     async getDepartment() {
       //  promise 都要有await方法
       const res = await getDepartment()
-      console.log(res)
       this.depts = transListToTreeData(res, 0)
-      console.log(this.depts)
     },
-    operarteDept(type) {
+    // 这里的type是实参，同时还可以传入一个形参
+    operarteDept(type, id) {
       // 传入的command的项
       if (type === 'add') {
         this.showDialog = true
+        this.currentNodeId = id
+      } else if (type === 'edit') {
+        // 编辑部门
+        this.showDialog = true
+        // 将部门信息带到后续的页面中
+        this.currentNodeId = id
+        // 更新props currentNodeId 是异步的操作
+        // 调用子组件是同步的操作
+        // 要在子组件获取数据
+        // 父组件调用子组件的方法获取数据
+        // // this.$refs.addDept 等同于子组件的this
+        // 需要等到数据更新完毕在执行回调函数 this.$nextTick()
+        this.$nextTick(() => {
+          this.$refs.addDept.getDepartmentDetail() //  this.$refs.addDept. 这个前缀可以直接获取到子组件的方法
+        })
       }
     }
   }

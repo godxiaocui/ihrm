@@ -1,4 +1,4 @@
-import { getToken, setToken, removeToken } from '@/views/utils/auth'
+import { getToken, setToken, removeToken } from '@/utils/auth'
 import { login, getUserInfo } from '@/api/user'
 const state = {
   token: getToken(), // 缓存读取读取数据
