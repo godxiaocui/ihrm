@@ -41,7 +41,7 @@
   </div>
 </template>
 <script>
-import { getDepartment } from '@/api/department'
+import { getDepartment, delDepartment } from '@/api/department'
 import { transListToTreeData } from '@/utils/index'
 import AddDept from './components/add-dept.vue'
 export default {
@@ -89,6 +89,15 @@ export default {
         // 需要等到数据更新完毕在执行回调函数 this.$nextTick()
         this.$nextTick(() => {
           this.$refs.addDept.getDepartmentDetail() //  this.$refs.addDept. 这个前缀可以直接获取到子组件的方法
+        })
+      } else {
+        // 删除部门
+        // 删除部门
+        this.$confirm('您确认要删除该部门吗').then(async() => {
+          await delDepartment(id)
+          // 提示消息
+          this.$message.success('删除部门成功')
+          this.getDepartment()
         })
       }
     }
