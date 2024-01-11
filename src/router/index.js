@@ -13,7 +13,6 @@ import permissionRouter from './modules/permission'
 import roleRouter from './modules/role'
 import salaryRouter from './modules/salary'
 import socialRouter from './modules/social'
-import app from '@/store/modules/app'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1

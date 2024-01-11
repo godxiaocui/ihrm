@@ -46,7 +46,10 @@
             <template v-else>
               <el-button size="mini" type="text">分配权限</el-button>
               <el-button size="mini" type="text" @click="btnEditRow(row)">编辑</el-button>
-              <el-button size="mini" type="text">删除</el-button>
+              <!-- 气泡弹窗 -->
+              <el-popconfirm title="确定是否删除数据" @onConfirm="confirmDel(row.id)">
+                <el-button slot="reference" size="mini" type="text" style="margin-left:10px">删除</el-button>
+              </el-popconfirm>
             </template>
           </template>
         </el-table-column>
@@ -74,9 +77,9 @@
         <el-form-item label="角色名称" prop="name">
           <el-input v-model="roleForm.name" style="width:300px" size="mini" />
         </el-form-item>
-        <el-form-item label="启用" prop="sate">
+        <el-form-item label="启用" prop="state">
           <!-- 需要给switch 设置一个开的值和一个关的值 :active-value="1" :inactive-value="0"-->
-          <el-switch v-model="roleForm.sate" size="mini" :active-value="1" :inactive-value="0" />
+          <el-switch v-model="roleForm.state" size="mini" :active-value="1" :inactive-value="0" />
         </el-form-item>
         <el-form-item label="角色描述" prop="description">
           <el-input v-model="roleForm.description" type="textarea" :rows="3" style="width:300px" size="mini" />
@@ -94,7 +97,7 @@
   </div>
 </template>
 <script>
-import { getRoleList, addRole } from '@/api/role'
+import { getRoleList, addRole, updateRole, delRole } from '@/api/role'
 export default {
   name: 'Role',
   data() {
@@ -167,11 +170,41 @@ export default {
       row.editRow.state = row.state
       row.editRow.description = row.description
     },
-    btnEditOK(row) {
-
+    async btnEditOK(row) {
+      if (row.editRow.name && row.editRow.description) {
+        // 更新数据但是要重新修改参数
+        await updateRole({ ...row.editRow, id: row.id })
+        // 更新成功
+        // 更新显示数据
+        this.$message.success('更新数据')
+        // 对象复制不能直接复制会报错
+        // row.name = row.editRow.name
+        // 需要用对象赋值操作
+        // 比较春的方式
+        // Object.assign(row, {
+        //   name: row.editRow.name
+        // })
+        Object.assign(row, {
+          ...row.editRow,
+          isEdit: false // 退出编辑模式
+        }) // 规避eslint的误判
+        // 关闭数据
+        this.btnEditCancel(row)
+      } else {
+        this.$message.warn('字段不能为空')
+      }
     },
     btnEditCancel(row) {
-
+      row.isEdit = false // 修改行的数据状态
+    },
+    async confirmDel(id) {
+      await delRole(id) // 后端删除
+      this.$message.success('删除角色成功')
+      // 如果
+      // 分页查询的数据，删除的问题
+      // 删除的如果是最后一个数据，第一种情况是删除不是最后一个，第二种删除是最后一个，页码需要减1
+      if (this.list.length === 1) this.pageParams.page--
+      this.getRoleList()
     }
   }
 }
