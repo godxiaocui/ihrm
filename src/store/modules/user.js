@@ -1,8 +1,10 @@
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { login, getUserInfo } from '@/api/user'
+import { constantRoutes } from '@/router'
 const state = {
   token: getToken(), // 缓存读取读取数据
-  userInfo: {} // 用户基本资料
+  userInfo: {}, // 用户基本资料
+  routes: constantRoutes //  用户静态路由的信息
 }
 
 const mutations = {
@@ -19,6 +21,10 @@ const mutations = {
   },
   setUserInfo(state, userInfo) {
     state.userInfo = userInfo
+  },
+  setRoutes(state, newRoutes) {
+    // 给旧的路由数组加上新的路由数组
+    state.routes = [...constantRoutes, ...newRoutes]
   }
 }
 
@@ -36,6 +42,8 @@ const actions = {
     // 获取资料接口
     const res = await getUserInfo()
     context.commit('setUserInfo', res)
+    // async 是一个promise 可以return的
+    return res
   },
   // 删除token重新登录
   logout(context) {

@@ -28,7 +28,8 @@
       </div>
       <div class="right">
         <el-row class="opeate-tools" type="flex" justify="end">
-          <el-button size="mini" type="primary">添加员工</el-button>
+          <!-- 试试跳转-->
+          <el-button size="mini" type="primary" @click="$router.push('/employee/detail')">添加员工</el-button>
           <el-button size="mini" @click="showExcelDialog = true">excel导入</el-button>
           <el-button size="mini" @click="exportEmployee">excel导出</el-button>
         </el-row>
@@ -52,10 +53,13 @@
           <el-table-column prop="departmentName" label="部门" />
           <el-table-column prop="timeOfEntry" label="入职时间" sortable />
           <el-table-column label="操作" width="280px">
-            <template>
-              <el-button size="mini" type="text">查看</el-button>
-              <el-button size="mini" type="text">角色</el-button>
-              <el-button size="mini" type="text">删除</el-button>
+            <template v-slot="{ row}">
+              <el-button size="mini" type="text" @click="$router.push(`/employee/detail/${row.id}`)">查看</el-button>
+              <el-button size="mini" type="text" @click="btnRole(row.id)">角色</el-button>
+              <!-- 气泡弹窗 -->
+              <el-popconfirm title="确定是否删除数据" @onConfirm="confirmDel(row.id)">
+                <el-button slot="reference" size="mini" type="text" style="margin-left:10px">删除</el-button>
+              </el-popconfirm>
             </template>
           </el-table-column>
         </el-table>
@@ -74,12 +78,35 @@
     <!-- 放置导入组件-->
     <!-- @uploadSuccess 监听子组件的uploadSuccess的方法 -->
     <import-excel :show-excel-dialog.sync="showExcelDialog" @uploadSuccess="getEmployeeList" />
+    <!-- 角色弹层-->
+    <!-- 一般el-dialog的visible属性都会加一个sync 可以直接监控到关闭 -->
+    <el-dialog :visible.sync="showRoleDialog" title="分配角色">
+      <!-- 弹层内容-->
+      <el-checkbox-group v-model="roleIds">
+        <!-- 放置n个的checkbox  要执行checkbox的存储值 item.id-->
+        <!-- 这里的label 就是存储的值-->
+        <el-checkbox
+          v-for="item in roleList"
+          :key="item.id"
+          :label="item.id"
+        >{{ item.name }}</el-checkbox>
+      </el-checkbox-group>
+      <!-- 确定和取消按钮-->
+      <!-- 用插槽可以按钮放到最下面slot 具名插槽 -->
+      <el-row slot="footer" type="flex" justify="center">
+        <el-col :span="6">
+          <el-button type="primary" size="mini" @click="btnRoleOK">确定</el-button>
+          <el-button size="mini" @click="showRoleDialog=false">取消</el-button>
+        </el-col>
+
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { getDepartment } from '@/api/department'
-import { getEmployeeList, exportEmployee } from '@/api/employee'
+import { getEmployeeList, exportEmployee, delEmployee, getEnableRoleList, assignRole, getEmployeeDetail } from '@/api/employee'
 import { transListToTreeData } from '@/utils/index'
 import FileSaver from 'file-saver'
 import ImportExcel from './import-excel.vue'
@@ -90,6 +117,10 @@ export default {
   },
   data() {
     return {
+      currentUserId: null, // 记录当前用户的id
+      roleIds: [], // 这个是用户获取的值
+      roleList: [], // 角色数据
+      showRoleDialog: false, // 控制role弹层
       showExcelDialog: false, // 控制excel弹层
       total: 0, // 员工总数
       list: [], // 员工数据
@@ -159,6 +190,32 @@ export default {
       // console.log(result) // 使用一个npm包 直接将blob文件下载到本地 file-saver
       // FileSaver.saveAs(blob对象,文件名称)
       FileSaver.saveAs(result, '员工信息表.xlsx') // 下载文件
+    },
+    // 删除员工的方法
+    async confirmDel(id) {
+      await delEmployee(id)
+      // 同样是最后一页的判断
+      if (this.list.length === 1 && this.queryParams.page > 1) this.queryParams.page--
+      this.getEmployeeList()
+      this.$message.success('删除员工成功')
+    },
+    //  角色弹曾
+    async btnRole(id) {
+      this.roleList = await getEnableRoleList()
+      this.currentUserId = id
+      const { roleIds } = await getEmployeeDetail(id)
+      this.roleIds = roleIds
+      // 交换一下位置弹曾会更快
+      this.showRoleDialog = true
+    },
+    // 点击用户分配角色
+    async btnRoleOK() {
+      await assignRole({
+        id: this.currentUserId,
+        roleIds: this.roleIds
+      })
+      this.$message.success('分配角色成功')
+      this.showRoleDialog = false
     }
   }
 }

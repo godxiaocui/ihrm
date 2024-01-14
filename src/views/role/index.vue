@@ -44,7 +44,7 @@
             </template>
             <!-- 编辑状态-->
             <template v-else>
-              <el-button size="mini" type="text">分配权限</el-button>
+              <el-button size="mini" type="text" @click="btnPermission(row.id)">分配权限</el-button>
               <el-button size="mini" type="text" @click="btnEditRow(row)">编辑</el-button>
               <!-- 气泡弹窗 -->
               <el-popconfirm title="确定是否删除数据" @onConfirm="confirmDel(row.id)">
@@ -94,14 +94,45 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+    <!-- 权限的弹曾-->
+    <el-dialog :visible.sync="showPermissionDialog" title="分配权限">
+      <!-- 防止权限数据-->
+      <!-- 要展示的话需要配置props属性-->
+      <!-- 显示复选框:show-checkbox-->
+      <!-- 默认勾选的tree数组    :default-checked-keys-->
+      <!-- 需要给tree组件一个唯一值才能显示-->
+      <!-- 获取已选择的节点getCheckedKeys -->
+      <!-- 获取一个数组件的key 用ref-->
+      <el-tree
+        ref="permTree"
+        :data="permissionData"
+        :props="{label:'name'}"
+        :show-checkbox="true"
+        :default-expand-all="true"
+        :default-checked-keys="permIds"
+        node-key="id"
+      />
+      <el-row slot="footer" type="flex" justify="center">
+        <el-col :span="6">
+          <el-button size="mini" type="primary" @click="btnPermissionOK">确定</el-button>
+          <el-button size="mini" @click="showPermissionDialog=false">取消</el-button>
+        </el-col>
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 <script>
-import { getRoleList, addRole, updateRole, delRole } from '@/api/role'
+import { getRoleList, addRole, updateRole, delRole, getRoleDetail, assignPerm } from '@/api/role'
+import { getPermissionList } from '@/api/permission'
+import { transListToTreeData } from '@/utils'
 export default {
   name: 'Role',
   data() {
     return {
+      permIds: [], // 权限数组
+      currentRoleId: null, // 当前的用户id
+      permissionData: [],
+      showPermissionDialog: false, // 全新啊弹层显示
       list: [],
       showDialog: false,
       // 将分页信息放置到一个对象中
@@ -205,6 +236,23 @@ export default {
       // 删除的如果是最后一个数据，第一种情况是删除不是最后一个，第二种删除是最后一个，页码需要减1
       if (this.list.length === 1) this.pageParams.page--
       this.getRoleList()
+    },
+    // 分配权限开启弹曾
+    async btnPermission(id) {
+      this.currentRoleId = id
+      const { permIds } = await getRoleDetail(id)
+      this.permIds = permIds
+      this.permissionData = transListToTreeData(await getPermissionList(), 0)
+      this.showPermissionDialog = true
+    },
+    // 点击确定角色权限
+    async btnPermissionOK() {
+      await assignPerm({
+        id: this.currentRoleId,
+        permIds: this.$refs.permTree.getCheckedKeys()
+      })
+      this.$message.success('获取成功')
+      this.showPermissionDialog = false
     }
   }
 }
