@@ -35,6 +35,25 @@ Vue.use(ElementUI, { locale })
 
 Vue.config.productionTip = false
 
+// 注册自定义指令.控制权限功能
+Vue.directive('permission', {
+  // 会在指令作用的元素再插入dom之后执行
+  inserted(el, bingding) {
+    // el 是当前指令作用的dom元素的对象
+    // button 是v-permission="表达式" 表达式的信息
+    // 这路有长链路的时候有可能会有null报错，所以用?.比较好
+    console.log(el, bingding)
+    // 这里为了获取到再vuex的userinfo下的points属性
+    const points = store.state.user.userInfo?.roles?.points || []
+    // bingding.value 可以拿到传入的表达式的值
+    // v-permission="test" 这里的bingding.value就是等于test
+    if (!points.includes(bingding.value)) {
+      // 移除元素
+      el.remove
+    }
+  }
+})
+
 new Vue({
   el: '#app',
   router,

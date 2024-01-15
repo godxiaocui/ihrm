@@ -1,6 +1,6 @@
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { login, getUserInfo } from '@/api/user'
-import { constantRoutes } from '@/router'
+import { constantRoutes, resetRouter } from '@/router'
 const state = {
   token: getToken(), // 缓存读取读取数据
   userInfo: {}, // 用户基本资料
@@ -51,6 +51,8 @@ const actions = {
     context.commit('removeToken')
     // 删除用户信息
     context.commit('setUserInfo', {})
+    // 重置路由的方法
+    resetRouter()
   }
 }
 

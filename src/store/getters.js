@@ -6,6 +6,8 @@ const getters = {
   name: state => state.user.userInfo.username,
   userId: state => state.user.userInfo.userId,
   userInfo: state => state.user.userInfo,
-  routes: state => state.user.routes
+  routes: state => state.user.routes,
+  company: state => state.user.userInfo.company, // 公司名称
+  departmentName: state => state.user.userInfo.departmentName // 部门名称
 }
 export default getters
